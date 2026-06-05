@@ -1,99 +1,78 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8"/>
+    <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Soc Ops — Social Bingo</title>
     <link rel="stylesheet" th:href="@{/css/app.css}"/>
     <link rel="icon" type="image/png" th:href="@{/favicon.png}"/>
-    <style>
-        /* active-state tweaks that need pseudo-class selectors */
-        .tile-active:active { background-color: #f3f4f6 !important; }
-        .accent-active:active { background-color: #3b82f6 !important; }
-    </style>
 </head>
-<body class="h-full">
+<body>
+<div class="page-shell">
+    <main class="content-shell">
+        <section id="lobbyView" class="phase-view lobby-view">
+            <div class="hero-panel">
+                <div class="hero-copy">
+                    <p class="eyebrow">Social Bingo</p>
+                    <h1>Soc Ops</h1>
+                    <p class="lead">A quiet board for bold introductions. Find a match, mark it, and aim for a clean line.</p>
+                </div>
+                <div class="hero-visual" aria-hidden="true">
+                    <div class="visual-blob"></div>
+                    <div class="visual-grid"></div>
+                    <div class="visual-accent"></div>
+                </div>
 
-<!-- ============================================================= -->
-<!--  LOBBY — visible before a game starts                          -->
-<!-- ============================================================= -->
-<div id="lobbyView" class="flex flex-col items-center justify-center min-h-full p-6 bg-gray-50">
-    <div class="text-center max-w-sm">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">Soc Ops</h1>
-        <p class="text-lg text-gray-600 mb-8">Social Bingo</p>
 
-        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8">
-            <h2 class="font-semibold text-gray-800 mb-3">How to play</h2>
-            <ul class="text-left text-gray-600 text-sm space-y-2">
-                <li>• Find people who match the questions</li>
-                <li>• Tap a square when you find a match</li>
-                <li>• Get 5 in a row to win!</li>
-            </ul>
+                <div class="rules-card">
+                    <div class="rules-header">
+                        <span>How to play</span>
+                        <span class="rule-count">3 steps</span>
+                    </div>
+                    <ol class="rules-list">
+                        <li>Scan the board for someone who fits the prompt.</li>
+                        <li>Tap the square when you discover a match.</li>
+                        <li>Complete any straight line to win.</li>
+                    </ol>
+                </div>
+
+                <button onclick="launchGame()" class="button-primary">Start game</button>
+            </div>
+        </section>
+
+        <section id="activeView" class="phase-view active-view" style="display:none">
+            <header class="topbar">
+                <button onclick="retreatToLobby()" class="button-secondary">← Back</button>
+                <div class="title-group">
+                    <p class="eyebrow">Live board</p>
+                    <h1>Soc Ops</h1>
+                </div>
+                <div class="spacer"></div>
+            </header>
+
+            <p class="instruction">Tap a square when someone matches it.</p>
+
+            <div id="bingoBanner" class="status-banner" style="display:none">BINGO — line completed.</div>
+
+            <div class="board-shell">
+                <div id="gridContainer" class="board-grid"></div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="victoryOverlay" class="overlay" style="display:none">
+    <div class="modal-card">
+        <div class="modal-mark">✓</div>
+        <div class="modal-copy">
+            <p class="modal-eyebrow">BINGO</p>
+            <h2>Well played.</h2>
+            <p class="modal-note">You built a complete line. Keep the rhythm going.</p>
         </div>
-
-        <button onclick="launchGame()"
-                class="w-full bg-accent text-white font-semibold py-4 px-8 rounded-lg text-lg accent-active transition-colors">
-            Start Game
-        </button>
+        <button onclick="dismissVictoryModal()" class="button-primary">Continue</button>
     </div>
 </div>
 
-<!-- ============================================================= -->
-<!--  ACTIVE GAME — board, header, optional bingo banner            -->
-<!-- ============================================================= -->
-<div id="activeView" class="flex flex-col min-h-full bg-gray-50" style="display:none">
-
-    <!-- top bar -->
-    <header class="flex items-center justify-between p-3 bg-white border-b border-gray-200">
-        <button onclick="retreatToLobby()"
-                class="text-gray-500 text-sm px-3 py-1\.5 rounded tile-active">
-            &#8592; Back
-        </button>
-        <h1 class="font-bold text-gray-900">Soc Ops</h1>
-        <div class="w-16"></div>
-    </header>
-
-    <!-- hint -->
-    <p class="text-center text-gray-500 text-sm py-2 px-4">
-        Tap a square when you find someone who matches it.
-    </p>
-
-    <!-- bingo banner (hidden until victory) -->
-    <div id="bingoBanner"
-         class="bg-amber-100 text-amber-800 text-center py-2 font-semibold text-sm"
-         style="display:none">
-        &#127881; BINGO! You got a line!
-    </div>
-
-    <!-- the 5×5 grid -->
-    <div class="flex-1 flex items-center justify-center p-3">
-        <div id="gridContainer"
-             class="grid grid-cols-5 gap-1 w-full max-w-md mx-auto aspect-square">
-            <!-- tiles injected by JS -->
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================= -->
-<!--  VICTORY MODAL — overlays the board                            -->
-<!-- ============================================================= -->
-<div id="victoryOverlay"
-     class="fixed inset-0 bg-black\/50 flex items-center justify-center p-4 z-50"
-     style="display:none">
-    <div class="bg-white rounded-xl p-6 max-w-xs w-full text-center shadow-xl animate-[bounce_0.5s_ease-out]">
-        <div class="text-5xl mb-4">&#127881;</div>
-        <h2 class="text-3xl font-bold text-amber-500 mb-2">BINGO!</h2>
-        <p class="text-gray-600 mb-6">You completed a line!</p>
-        <button onclick="dismissVictoryModal()"
-                class="w-full bg-accent text-white font-semibold py-3 px-6 rounded-lg accent-active transition-colors">
-            Keep Playing
-        </button>
-    </div>
-</div>
-
-<!-- ============================================================= -->
-<!--  Client-side game engine                                       -->
-<!-- ============================================================= -->
 <script>
 (function () {
     "use strict";
@@ -102,29 +81,25 @@
     var TOTAL_CELLS = SIDE * SIDE;
     var PERSIST_KEY = "socops-bingo-snapshot";
 
-    /* ── state ────────────────────────────────────────────────── */
-    var liveTiles   = [];          /* Array of BingoCell objects  */
-    var streakFound = null;        /* WinningStreak or null       */
+    var liveTiles   = [];
+    var streakFound = null;
     var modalShown  = false;
-    var currentPhase = "LOBBY";    /* LOBBY | ACTIVE | VICTORY    */
+    var currentPhase = "LOBBY";
 
-    /* ── DOM refs ─────────────────────────────────────────────── */
     var lobbyDiv   = document.getElementById("lobbyView");
     var activeDiv  = document.getElementById("activeView");
     var gridDiv    = document.getElementById("gridContainer");
     var bannerDiv  = document.getElementById("bingoBanner");
     var overlayDiv = document.getElementById("victoryOverlay");
 
-    /* ── phase switching ──────────────────────────────────────── */
     function showPhase(phase) {
         currentPhase = phase;
         lobbyDiv.style.display   = (phase === "LOBBY") ? "" : "none";
         activeDiv.style.display  = (phase !== "LOBBY") ? "" : "none";
-        bannerDiv.style.display  = (streakFound)       ? "" : "none";
-        overlayDiv.style.display = (modalShown)        ? "" : "none";
+        bannerDiv.style.display  = (streakFound) ? "" : "none";
+        overlayDiv.style.display = (modalShown) ? "" : "none";
     }
 
-    /* ── board rendering ──────────────────────────────────────── */
     function paintGrid() {
         gridDiv.innerHTML = "";
         var winIds = streakFound ? gatherStreakIds(streakFound) : {};
@@ -132,43 +107,39 @@
         for (var t = 0; t < liveTiles.length; t++) {
             var tile = liveTiles[t];
             var btn = document.createElement("button");
+            var base = "tile";
+            var state = "";
 
-            /* base styling identical to the original Blazor BingoSquare */
-            var base = "relative flex items-center justify-center p-1 text-center " +
-                       "border border-gray-300 rounded transition-all duration-150 " +
-                       "select-none min-h-[60px] text-xs leading-tight";
-
-            var state;
             if (tile.selected) {
-                state = winIds[tile.id]
-                    ? "bg-amber-200 border-amber-400 text-amber-900"
-                    : "bg-marked border-marked-border text-green-800";
+                state = winIds[tile.id] ? " tile-selected tile-winning" : " tile-selected";
             } else {
-                state = "bg-white text-gray-700 tile-active";
+                state = tile.freeCell ? " tile-free" : "";
             }
 
-            var extra = tile.freeCell ? " font-bold text-sm" : "";
-            btn.className = base + " " + state + extra;
-
-            if (tile.freeCell) { btn.disabled = true; }
+            btn.className = base + state;
+            if (tile.freeCell) {
+                btn.disabled = true;
+            }
             btn.setAttribute("aria-pressed", String(tile.selected));
             btn.setAttribute("aria-label", tile.freeCell ? "Free space" : tile.prompt);
 
-            /* inner label */
+            var iconSpan = document.createElement("span");
+            iconSpan.className = "tile-icon";
+            iconSpan.textContent = emojiForPrompt(tile.prompt);
+            btn.appendChild(iconSpan);
+
             var labelSpan = document.createElement("span");
-            labelSpan.className = "wrap-break-word hyphens-auto";
+            labelSpan.className = "tile-label";
             labelSpan.textContent = tile.prompt;
             btn.appendChild(labelSpan);
 
-            /* check-mark for marked non-free tiles */
             if (tile.selected && !tile.freeCell) {
                 var tick = document.createElement("span");
-                tick.className = "absolute top-0.5 right-0.5 text-green-600 text-xs";
-                tick.textContent = "\u2713";
+                tick.className = "tile-check";
+                tick.textContent = "✓";
                 btn.appendChild(tick);
             }
 
-            /* click handler (closure over tile id) */
             btn.addEventListener("click", (function (cid) {
                 return function () { onTileTapped(cid); };
             })(tile.id));
@@ -177,7 +148,6 @@
         }
     }
 
-    /* ── tile tap logic ───────────────────────────────────────── */
     function onTileTapped(cellId) {
         liveTiles = flipTile(liveTiles, cellId);
 
@@ -195,7 +165,6 @@
         overlayDiv.style.display = modalShown  ? "" : "none";
     }
 
-    /* ── board manipulation (mirrors BoardAssembler.java) ─────── */
     function flipTile(board, cellId) {
         return board.map(function (c) {
             if (c.id === cellId && !c.freeCell) {
@@ -205,11 +174,9 @@
         });
     }
 
-    /* ── victory scanning (mirrors detectWinningStreak) ───────── */
     function scanForStreak(board) {
         var r, c, positions, i;
 
-        /* rows */
         for (r = 0; r < SIDE; r++) {
             positions = [];
             for (c = 0; c < SIDE; c++) { positions.push(r * SIDE + c); }
@@ -218,7 +185,6 @@
             }
         }
 
-        /* columns */
         for (c = 0; c < SIDE; c++) {
             positions = [];
             for (r = 0; r < SIDE; r++) { positions.push(r * SIDE + c); }
@@ -227,14 +193,12 @@
             }
         }
 
-        /* main diagonal */
         positions = [];
         for (i = 0; i < SIDE; i++) { positions.push(i * SIDE + i); }
         if (lineComplete(board, positions)) {
             return { direction: "diagonal", index: 0, cellPositions: positions };
         }
 
-        /* anti diagonal */
         positions = [];
         for (i = 0; i < SIDE; i++) { positions.push(i * SIDE + (SIDE - 1 - i)); }
         if (lineComplete(board, positions)) {
@@ -259,7 +223,37 @@
         return lookup;
     }
 
-    /* ── localStorage persistence ─────────────────────────────── */
+    function emojiForPrompt(prompt) {
+        var mapping = {
+            "bikes to work": "🚲",
+            "has lived in another country": "🌍",
+            "has a pet": "🐾",
+            "prefers tea over coffee": "🍵",
+            "plays an instrument": "🎸",
+            "speaks more than 2 languages": "🌐",
+            "has run a marathon": "🏃",
+            "was born in a different state": "🧭",
+            "has met a celebrity": "🌟",
+            "can juggle": "🤹",
+            "has been skydiving": "🪂",
+            "loves cooking": "🍳",
+            "has a garden": "🌿",
+            "has traveled to Asia": "🛫",
+            "is left-handed": "✋",
+            "has a twin": "👯",
+            "plays video games": "🎮",
+            "does yoga": "🧘",
+            "has a hidden talent": "🎭",
+            "loves spicy food": "🌶️",
+            "has been on TV": "📺",
+            "collects something unique": "🧩",
+            "has read a book this month": "📚",
+            "knows sign language": "🤟",
+            "FREE SPACE": "⭐"
+        };
+        return mapping[prompt] || "✨";
+    }
+
     function persistSnapshot() {
         try {
             var blob = JSON.stringify({
@@ -269,7 +263,7 @@
                 modal: modalShown
             });
             localStorage.setItem(PERSIST_KEY, blob);
-        } catch (_) { /* storage full or unavailable */ }
+        } catch (_) { }
     }
 
     function restoreSnapshot() {
@@ -286,7 +280,6 @@
         } catch (_) { return false; }
     }
 
-    /* ── public API (called from onclick attrs) ───────────────── */
     window.launchGame = function () {
         fetch("/api/bingo/fresh-board")
             .then(function (resp) { return resp.json(); })
@@ -316,7 +309,6 @@
         persistSnapshot();
     };
 
-    /* ── boot ─────────────────────────────────────────────────── */
     if (restoreSnapshot()) {
         paintGrid();
         showPhase(currentPhase);
@@ -325,6 +317,5 @@
     }
 })();
 </script>
-
 </body>
 </html>

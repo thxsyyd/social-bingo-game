@@ -78,8 +78,11 @@
             </div>
 
             <div class="hero-actions">
-                <button onclick="launchGame()" class="button-primary">Start game</button>
-                <p class="hero-note mode-select">Choose Tech Life Bingo or Scavenger Hunt to start playing.</p>
+                <div class="hero-buttons">
+                    <button onclick="launchGame()" class="button-primary">Play Bingo</button>
+                    <button onclick="launchCardDeck()" class="button-secondary">Shuffle cards</button>
+                </div>
+                <p class="hero-note mode-select">Choose Tech Life Bingo or Card Deck Shuffle to start playing.</p>
             </div>
 
                 <div class="rules-card">
@@ -106,12 +109,19 @@
                 <div class="spacer"></div>
             </header>
 
-            <p class="instruction">Tap a square when someone matches it.</p>
+            <p id="instruction" class="instruction">Tap a square when someone matches it.</p>
 
             <div id="bingoBanner" class="status-banner" style="display:none">BINGO — line completed.</div>
 
             <div class="board-shell">
                 <div id="gridContainer" class="board-grid"></div>
+            </div>
+            <div id="cardDeckView" class="card-shell" style="display:none">
+                <button onclick="drawNextCard()" class="card-card" aria-live="polite">
+                    <span class="card-title">Tap to reveal your question</span>
+                    <span id="cardPrompt" class="card-prompt">Your next prompt will appear here.</span>
+                    <span class="card-subtitle">Tap again for a fresh card.</span>
+                </button>
             </div>
         </section>
     </main>
@@ -140,6 +150,8 @@
     var liveTiles   = [];
     var streakFound = null;
     var modalShown  = false;
+    var currentMode = "BINGO";
+    var currentCardPrompt = "";
     var currentPhase = "LOBBY";
 
     var lobbyDiv   = document.getElementById("lobbyView");
@@ -147,13 +159,20 @@
     var gridDiv    = document.getElementById("gridContainer");
     var bannerDiv  = document.getElementById("bingoBanner");
     var overlayDiv = document.getElementById("victoryOverlay");
+    var cardPromptDiv = document.getElementById("cardPrompt");
+    var instructionDiv = document.getElementById("instruction");
+    var cardDeckDiv = document.getElementById("cardDeckView");
+    var boardShellDiv = document.querySelector(".board-shell");
 
     function showPhase(phase) {
         currentPhase = phase;
         lobbyDiv.style.display   = (phase === "LOBBY") ? "" : "none";
         activeDiv.style.display  = (phase !== "LOBBY") ? "" : "none";
-        bannerDiv.style.display  = (streakFound) ? "" : "none";
-        overlayDiv.style.display = (modalShown) ? "" : "none";
+        boardShellDiv.style.display = (phase === "ACTIVE" && currentMode === "BINGO") ? "" : "none";
+        cardDeckDiv.style.display = (phase === "ACTIVE" && currentMode === "CARD") ? "" : "none";
+        updateInstruction();
+        bannerDiv.style.display  = (streakFound && currentMode === "BINGO") ? "" : "none";
+        overlayDiv.style.display = (modalShown && currentMode === "BINGO") ? "" : "none";
     }
 
     function paintGrid() {
@@ -219,6 +238,18 @@
         paintGrid();
         bannerDiv.style.display  = streakFound ? "" : "none";
         overlayDiv.style.display = modalShown  ? "" : "none";
+    }
+
+    function paintCard() {
+        if (!cardPromptDiv) { return; }
+        cardPromptDiv.textContent = currentCardPrompt || "Tap to reveal a prompt.";
+    }
+
+    function updateInstruction() {
+        if (!instructionDiv) { return; }
+        instructionDiv.textContent = currentMode === "CARD"
+            ? "Tap the card to reveal a random icebreaker question."
+            : "Tap a square when someone matches it.";
     }
 
     function flipTile(board, cellId) {
@@ -316,7 +347,9 @@
                 phase: currentPhase,
                 tiles: liveTiles,
                 streak: streakFound,
-                modal: modalShown
+                modal: modalShown,
+                mode: currentMode,
+                cardPrompt: currentCardPrompt
             });
             localStorage.setItem(PERSIST_KEY, blob);
         } catch (_) { }
@@ -327,6 +360,12 @@
             var raw = localStorage.getItem(PERSIST_KEY);
             if (!raw) { return false; }
             var snap = JSON.parse(raw);
+            currentMode = snap.mode || "BINGO";
+            currentCardPrompt = snap.cardPrompt || "";
+            if (currentMode === "CARD") {
+                currentPhase = snap.phase || "ACTIVE";
+                return currentPhase !== "LOBBY";
+            }
             if (!snap.tiles || snap.tiles.length !== TOTAL_CELLS) { return false; }
             liveTiles   = snap.tiles;
             streakFound = snap.streak || null;
@@ -337,12 +376,14 @@
     }
 
     window.launchGame = function () {
+        currentMode = "BINGO";
         fetch("/api/bingo/fresh-board")
             .then(function (resp) { return resp.json(); })
             .then(function (cells) {
                 liveTiles   = cells;
                 streakFound = null;
                 modalShown  = false;
+                currentCardPrompt = "";
                 currentPhase = "ACTIVE";
                 persistSnapshot();
                 paintGrid();
@@ -350,10 +391,34 @@
             });
     };
 
+    window.launchCardDeck = function () {
+        currentMode = "CARD";
+        currentPhase = "ACTIVE";
+        loadCardPrompt();
+        persistSnapshot();
+        showPhase("ACTIVE");
+    };
+
+    window.drawNextCard = function () {
+        loadCardPrompt();
+    };
+
+    function loadCardPrompt() {
+        fetch("/api/card-deck/next")
+            .then(function (resp) { return resp.json(); })
+            .then(function (prompt) {
+                currentCardPrompt = prompt;
+                paintCard();
+                persistSnapshot();
+            });
+    }
+
     window.retreatToLobby = function () {
         liveTiles   = [];
         streakFound = null;
         modalShown  = false;
+        currentMode = "BINGO";
+        currentCardPrompt = "";
         currentPhase = "LOBBY";
         persistSnapshot();
         showPhase("LOBBY");
@@ -366,7 +431,11 @@
     };
 
     if (restoreSnapshot()) {
-        paintGrid();
+        if (currentMode === "CARD") {
+            paintCard();
+        } else {
+            paintGrid();
+        }
         showPhase(currentPhase);
     } else {
         showPhase("LOBBY");

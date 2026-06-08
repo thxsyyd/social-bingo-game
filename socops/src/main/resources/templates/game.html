@@ -104,7 +104,7 @@
                 <button onclick="retreatToLobby()" class="button-secondary">← Back</button>
                 <div class="title-group">
                     <p class="eyebrow">Live board</p>
-                    <h1>Soc Ops</h1>
+                    <h2>Soc Ops</h2>
                 </div>
                 <div class="spacer"></div>
             </header>
@@ -114,7 +114,7 @@
             <div id="bingoBanner" class="status-banner" style="display:none">BINGO — line completed.</div>
 
             <div class="board-shell">
-                <div id="gridContainer" class="board-grid"></div>
+                <div id="gridContainer" class="board-grid" role="grid" aria-label="Bingo board"></div>
             </div>
             <div id="cardDeckView" class="card-shell" style="display:none">
                 <button onclick="drawNextCard()" class="card-card" aria-live="polite">
@@ -192,6 +192,7 @@
             }
 
             btn.className = base + state;
+            btn.setAttribute("role", "gridcell");
             if (tile.freeCell) {
                 btn.disabled = true;
             }

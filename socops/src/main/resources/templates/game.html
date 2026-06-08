@@ -12,17 +12,75 @@
     <main class="content-shell">
         <section id="lobbyView" class="phase-view lobby-view">
             <div class="hero-panel">
-                <div class="hero-copy">
-                    <p class="eyebrow">Social Bingo</p>
-                    <h1>Soc Ops</h1>
-                    <p class="lead">A quiet board for bold introductions. Find a match, mark it, and aim for a clean line.</p>
-                </div>
-                <div class="hero-visual" aria-hidden="true">
-                    <div class="visual-blob"></div>
-                    <div class="visual-grid"></div>
-                    <div class="visual-accent"></div>
+                <div class="hero-top">
+                    <span class="hero-badge">Interactive icebreaker</span>
+                    <div class="hero-copy">
+                        <p class="eyebrow">Social Bingo</p>
+                        <h1>Soc Ops</h1>
+                        <p class="lead">A quiet board for bold introductions. Find a match, mark it, and aim for a clean line.</p>
+                    </div>
                 </div>
 
+                <div class="hero-columns">
+                    <div class="hero-copy">
+                        <div class="hero-features">
+                            <div class="feature-item">
+                                <strong>Fast to start</strong>
+                                <span>Get the group engaged immediately with no prep.</span>
+                            </div>
+                            <div class="feature-item">
+                                <strong>People first</strong>
+                                <span>Discover stories and connection points in every prompt.</span>
+                            </div>
+                            <div class="feature-item">
+                                <strong>Play anywhere</strong>
+                                <span>Perfect for meetings, classrooms, and meetups.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="hero-visual" aria-hidden="true">
+                    <div class="hero-card-preview">
+                        <div class="hero-card-header">
+                            <span>Bingo board preview</span>
+                            <span>5x5</span>
+                        </div>
+                        <div class="hero-card-grid">
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square filled star"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                            <span class="preview-square"></span>
+                        </div>
+                    </div>
+                    <div class="visual-accent"></div>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <button onclick="launchGame()" class="button-primary">Start game</button>
+                <p class="hero-note">One board, endless icebreaker moments.</p>
+            </div>
 
                 <div class="rules-card">
                     <div class="rules-header">
@@ -35,8 +93,6 @@
                         <li>Complete any straight line to win.</li>
                     </ol>
                 </div>
-
-                <button onclick="launchGame()" class="button-primary">Start game</button>
             </div>
         </section>
 

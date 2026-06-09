@@ -406,7 +406,7 @@
 
     function loadCardPrompt() {
         fetch("/api/card-deck/next")
-            .then(function (resp) { return resp.json(); })
+            .then(function (resp) { return resp.text(); })
             .then(function (prompt) {
                 currentCardPrompt = prompt;
                 paintCard();
